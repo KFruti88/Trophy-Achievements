@@ -1,0 +1,36 @@
+<div id="psn-trophy-container" style="width: 90%; margin: auto; overflow: hidden;">
+    <div id="psn-trophy-display">
+        <p style="text-align: center;">Loading Trophy Feeds...</p>
+    </div>
+</div>
+
+<script>
+    /**
+     * Trophy Feed Fetcher
+     * Standards: No-Cache enabled, 90% Width, Asset Versioning applied.
+     */
+    async function loadPSNTrophies() {
+        // Updated with your actual GitHub path and versioning for cache-busting
+        const repoUrl = "https://Trophy-Achievements.github.io/psn-trophy-tracker/feed_widget.html";
+        const cacheBuster = "?v=" + new Date().getTime();
+        
+        try {
+            const response = await fetch(repoUrl + cacheBuster, {
+                headers: { 'Cache-Control': 'no-cache' }
+            });
+            
+            if (response.ok) {
+                const html = await response.text();
+                document.getElementById('psn-trophy-display').innerHTML = html;
+            } else {
+                document.getElementById('psn-trophy-display').innerHTML = "<p>Trophy data currently unavailable.</p>";
+            }
+        } catch (error) {
+            console.error("Error loading PSN feed:", error);
+            document.getElementById('psn-trophy-display').innerHTML = "<p>Connection error. Please try again later.</p>";
+        }
+    }
+
+    // Run on load
+    loadPSNTrophies();
+</script>
