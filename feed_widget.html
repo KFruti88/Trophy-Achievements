@@ -1,77 +1,142 @@
-<div id="psn-trophy-wrapper" style="width: 90%; margin: 20px auto; font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">
-    <div id="psn-trophy-display" style="border: 1px solid #ddd; border-radius: 8px; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 20px;">
-        <p style="text-align: center; color: #666;">Initializing Trophy Feed...</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSN Trophy Tracker</title>
+    
+    <style>
+        /* Compatibility Standards: 
+           90% Width, Responsive Stacking, and Divi 5 Compatible 
+        */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: transparent;
+        }
+
+        #psn-main-container {
+            width: 90%; /* Standard width protocol */
+            margin: 20px auto;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        #psn-widget-frame {
+            background: #1a1a1a; /* Dark theme to match PSN */
+            color: #ffffff;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #00439c; /* PlayStation Blue */
+        }
+
+        .psn-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #00439c;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .psn-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #psn-content-area {
+            min-height: 200px;
+        }
+
+        /* Responsive Mobile Stacking Logic */
+        @media (max-width: 768px) {
+            #psn-main-container {
+                width: 95%;
+            }
+            .psn-header h2 {
+                font-size: 1.2rem;
+            }
+        }
+
+        .loading-pulse {
+            text-align: center;
+            padding: 50px;
+            font-style: italic;
+            color: #aaa;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="psn-main-container">
+    <div id="psn-widget-frame">
+        <div class="psn-header">
+            <h2>PSN Trophy Activity</h2>
+            <img src="https://www.playstation.com/etc.clientlibs/global_layouts/clientlibs/clientlib-base/resources/img/ps-logo.svg" alt="PS" style="height: 24px; filter: brightness(0) invert(1);">
+        </div>
+        
+        <div id="psn-content-area">
+            <div class="loading-pulse">Connecting to Trophy Feed...</div>
+        </div>
     </div>
 </div>
 
 <script>
     /**
-     * Trophy Feed Standards Protocol
-     * 1. Pulls from GitHub Pages (kfruti88)
-     * 2. Implements Asset Versioning (?v=) to bypass GitHub Cache
-     * 3. Responsive "Stacking" logic for mobile/tablets
+     * Asset Versioning & Fetch Protocol
+     * Targets: OneLIVIDMAN, joe-punk_, Werewolf_5386, DarkTerrdog
      */
-    async function updateTrophyWidget() {
-        const username = "kfruti88";
-        const repo = "Trophy-Achievements";
-        const fileName = "feed_widget.html";
+    async function syncTrophyFeed() {
+        // Correct path to your GitHub Pages output
+        const githubUser = "KFruti88";
+        const repository = "Trophy-Achievements";
+        const file = "feed_widget.html";
         
-        // Cache busting versioning
-        const versionToken = new Date().getTime();
-        const targetUrl = `https://${username}.github.io/${repo}/${fileName}?v=${versionToken}`;
+        // Asset Versioning Strategy: Force browser to fetch new data every time
+        const versionString = `?v=${new Date().getTime()}`;
+        const fetchUrl = `https://${githubUser.github.io}/${repository}/${file}${versionString}`;
 
         try {
-            const response = await fetch(targetUrl, {
-                cache: "no-store", // Force fetch new data
-                headers: { 'Cache-Control': 'no-cache' }
+            const response = await fetch(fetchUrl, {
+                cache: "no-store",
+                headers: {
+                    'pragma': 'no-cache',
+                    'cache-control': 'no-cache'
+                }
             });
 
             if (response.ok) {
-                const htmlContent = await response.text();
-                document.getElementById('psn-trophy-display').innerHTML = htmlContent;
+                const htmlData = await response.text();
+                // Inject the generated feed into the container
+                document.getElementById('psn-content-area').innerHTML = htmlData;
             } else {
-                // Friendly error handling if file is missing
-                document.getElementById('psn-trophy-display').innerHTML = `
-                    <div style="text-align:center; padding: 20px;">
-                        <h3 style="color: #d9534f;">Feed Not Ready</h3>
-                        <p>GitHub Pages is still building or the file is missing.</p>
-                        <p style="font-size: 0.8em;">Target: ${targetUrl}</p>
-                    </div>`;
+                throw new Error("File not found");
             }
-        } catch (err) {
-            console.error("Widget Error:", err);
-            document.getElementById('psn-trophy-display').innerHTML = `
-                <div style="text-align:center; padding: 20px;">
-                    <p>Connection error. Please refresh or check GitHub Actions status.</p>
+        } catch (error) {
+            console.error("Sync Error:", error);
+            document.getElementById('psn-content-area').innerHTML = `
+                <div style="text-align:center; padding: 20px; color: #ff4d4d;">
+                    <p><strong>Feed Update Pending</strong></p>
+                    <p style="font-size: 0.9rem;">Ensure GitHub Actions has finished the first sync and Pages is enabled.</p>
                 </div>`;
         }
     }
 
-    // Execute on page load
-    updateTrophyWidget();
+    // Run on page load
+    window.onload = syncTrophyFeed;
 </script>
 
-<style>
-    /* Cross-compatibility styling */
-    #psn-trophy-wrapper {
-        max-width: 1200px; /* Limits size on Ultra-Wide monitors */
-    }
-    
-    #psn-trophy-display ul {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 15px;
-        list-style: none;
-        padding: 0;
-    }
-
-    /* Stacking logic for mobile */
-    @media (max-width: 768px) {
-        #psn-trophy-wrapper {
-            width: 95% !important;
-        }
-        #psn-trophy-display ul {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
+</body>
+</html>
