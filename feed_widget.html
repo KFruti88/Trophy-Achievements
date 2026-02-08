@@ -9,9 +9,7 @@
     <title>PSN Trophy Tracker</title>
     
     <style>
-        /* Compatibility Standards: 
-           90% Width, Responsive Stacking, and Divi 5 Compatible 
-        */
+        /* Compatibility Standards: 90% Width & Cross-Device Stacking */
         body {
             margin: 0;
             padding: 0;
@@ -25,7 +23,7 @@
         }
 
         #psn-widget-frame {
-            background: #1a1a1a; /* Dark theme to match PSN */
+            background: #1a1a1a; /* Dark theme */
             color: #ffffff;
             border-radius: 12px;
             padding: 25px;
@@ -53,7 +51,7 @@
             min-height: 200px;
         }
 
-        /* Responsive Mobile Stacking Logic */
+        /* Responsive Mobile Stacking */
         @media (max-width: 768px) {
             #psn-main-container {
                 width: 95%;
@@ -88,7 +86,7 @@
         </div>
         
         <div id="psn-content-area">
-            <div class="loading-pulse">Connecting to Trophy Feed...</div>
+            <div class="loading-pulse">Syncing Gamer Feeds...</div>
         </div>
     </div>
 </div>
@@ -99,14 +97,13 @@
      * Targets: OneLIVIDMAN, joe-punk_, Werewolf_5386, DarkTerrdog
      */
     async function syncTrophyFeed() {
-        // Correct path to your GitHub Pages output
-        const githubUser = "KFruti88";
+        const githubUser = "kfruti88"; // Corrected to your lowercase username
         const repository = "Trophy-Achievements";
         const file = "feed_widget.html";
         
-        // Asset Versioning Strategy: Force browser to fetch new data every time
+        // Fixed URL Logic and Asset Versioning
         const versionString = `?v=${new Date().getTime()}`;
-        const fetchUrl = `https://${githubUser.github.io}/${repository}/${file}${versionString}`;
+        const fetchUrl = `https://${githubUser}.github.io/${repository}/${file}${versionString}`;
 
         try {
             const response = await fetch(fetchUrl, {
@@ -119,7 +116,6 @@
 
             if (response.ok) {
                 const htmlData = await response.text();
-                // Inject the generated feed into the container
                 document.getElementById('psn-content-area').innerHTML = htmlData;
             } else {
                 throw new Error("File not found");
@@ -129,12 +125,12 @@
             document.getElementById('psn-content-area').innerHTML = `
                 <div style="text-align:center; padding: 20px; color: #ff4d4d;">
                     <p><strong>Feed Update Pending</strong></p>
-                    <p style="font-size: 0.9rem;">Ensure GitHub Actions has finished the first sync and Pages is enabled.</p>
+                    <p style="font-size: 0.9rem;">Ensure GitHub Actions has finished the first sync and Pages is enabled in Settings.</p>
                 </div>`;
         }
     }
 
-    // Run on page load
+    // Run on load
     window.onload = syncTrophyFeed;
 </script>
 
