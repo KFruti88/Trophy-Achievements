@@ -1,36 +1,77 @@
-<div id="psn-trophy-container" style="width: 90%; margin: auto; overflow: hidden;">
-    <div id="psn-trophy-display">
-        <p style="text-align: center;">Loading Trophy Feeds...</p>
+<div id="psn-trophy-wrapper" style="width: 90%; margin: 20px auto; font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;">
+    <div id="psn-trophy-display" style="border: 1px solid #ddd; border-radius: 8px; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 20px;">
+        <p style="text-align: center; color: #666;">Initializing Trophy Feed...</p>
     </div>
 </div>
 
 <script>
     /**
-     * Trophy Feed Fetcher
-     * Standards: No-Cache enabled, 90% Width, Asset Versioning applied.
+     * Trophy Feed Standards Protocol
+     * 1. Pulls from GitHub Pages (kfruti88)
+     * 2. Implements Asset Versioning (?v=) to bypass GitHub Cache
+     * 3. Responsive "Stacking" logic for mobile/tablets
      */
-    async function loadPSNTrophies() {
-        // Updated with your actual GitHub path and versioning for cache-busting
-        const repoUrl = "https://Trophy-Achievements.github.io/psn-trophy-tracker/feed_widget.html";
-        const cacheBuster = "?v=" + new Date().getTime();
+    async function updateTrophyWidget() {
+        const username = "kfruti88";
+        const repo = "Trophy-Achievements";
+        const fileName = "feed_widget.html";
         
+        // Cache busting versioning
+        const versionToken = new Date().getTime();
+        const targetUrl = `https://${username}.github.io/${repo}/${fileName}?v=${versionToken}`;
+
         try {
-            const response = await fetch(repoUrl + cacheBuster, {
+            const response = await fetch(targetUrl, {
+                cache: "no-store", // Force fetch new data
                 headers: { 'Cache-Control': 'no-cache' }
             });
-            
+
             if (response.ok) {
-                const html = await response.text();
-                document.getElementById('psn-trophy-display').innerHTML = html;
+                const htmlContent = await response.text();
+                document.getElementById('psn-trophy-display').innerHTML = htmlContent;
             } else {
-                document.getElementById('psn-trophy-display').innerHTML = "<p>Trophy data currently unavailable.</p>";
+                // Friendly error handling if file is missing
+                document.getElementById('psn-trophy-display').innerHTML = `
+                    <div style="text-align:center; padding: 20px;">
+                        <h3 style="color: #d9534f;">Feed Not Ready</h3>
+                        <p>GitHub Pages is still building or the file is missing.</p>
+                        <p style="font-size: 0.8em;">Target: ${targetUrl}</p>
+                    </div>`;
             }
-        } catch (error) {
-            console.error("Error loading PSN feed:", error);
-            document.getElementById('psn-trophy-display').innerHTML = "<p>Connection error. Please try again later.</p>";
+        } catch (err) {
+            console.error("Widget Error:", err);
+            document.getElementById('psn-trophy-display').innerHTML = `
+                <div style="text-align:center; padding: 20px;">
+                    <p>Connection error. Please refresh or check GitHub Actions status.</p>
+                </div>`;
         }
     }
 
-    // Run on load
-    loadPSNTrophies();
+    // Execute on page load
+    updateTrophyWidget();
 </script>
+
+<style>
+    /* Cross-compatibility styling */
+    #psn-trophy-wrapper {
+        max-width: 1200px; /* Limits size on Ultra-Wide monitors */
+    }
+    
+    #psn-trophy-display ul {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+        list-style: none;
+        padding: 0;
+    }
+
+    /* Stacking logic for mobile */
+    @media (max-width: 768px) {
+        #psn-trophy-wrapper {
+            width: 95% !important;
+        }
+        #psn-trophy-display ul {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
